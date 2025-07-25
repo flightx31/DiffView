@@ -10,8 +10,9 @@
         }
 
         .titleBar {
-            display: flex;
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            grid-column-gap: 10px;
             background-color: #007d9c;
             height: 30px;
             align-content: center;
@@ -19,7 +20,15 @@
             color: antiquewhite;
             font-size: xx-large;
             padding: 10px;
-            justify-content: space-between;
+        }
+
+        .titleButtons{
+            display: flex;
+            flex-direction: row;
+        }
+
+        #options{
+            margin-left: auto;
         }
 
         .line {
@@ -32,7 +41,8 @@
         }
 
         .line:hover {
-            color: darkgray;
+            /*color: darkgray;*/
+            border-bottom: 1px black solid;
         }
 
         .cell {
@@ -67,7 +77,7 @@
         }
 
         .comment {
-            background-color: white;
+            background-color: lightcyan;
             padding-left: 3px;
             height: 100%;
             width: 100%;
@@ -129,7 +139,7 @@
          */
 
         function CreateTextObjectFromHtml() {
-            const titleElement = document.getElementById("title");
+            const titleElement = GetTitleText();
             const lineElements = document.getElementsByClassName("line");
 
             // write a default object to local storage if not present
@@ -174,7 +184,7 @@
                     <div class="cell comment-cell">
                         <div class="comment" contenteditable="true">${obj.comment}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button" onclick="RemoveTextLine('${obj.id}')">-</button>
+                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
                             <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
                             <button class="more-options-icon">...</button>
                             <div class="more-options hidden">
@@ -187,7 +197,7 @@
                     <div class="cell text-cell">
                         <div class="text" contenteditable="true">${obj.text}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button" onclick="RemoveTextLine('${obj.id}')">-</button>
+                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
                             <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
                             <button class="more-options-icon">...</button>
                             <div class="more-options hidden">
@@ -250,13 +260,15 @@
             // save local storage object.
         }
 
-        function RemoveTextLine(id) {
+        function RemoveTextLineAction(id) {
             // remove the html, remove the element in local storage for that html element just removed.
             // get local storage object
             // find this text row in it, and identify it's position
             // decrement the positions of the rows after this one
             // remove this one from the object
             // save local storage object.
+            const e = document.getElementById(id);
+            e.remove();
             console.log("remove item " + id);
         }
 
@@ -275,19 +287,27 @@
                 commentsElement.appendChild(lineElement);
             }
 
-            let item = LoadTextObjectFromMemory();
-            if (!item) {
-                const titleElement = document.getElementById("title");
-                item = {};
-                item.title = titleElement.textContent;
-                item.lines = {};
-                item.order = [];
-                SaveTextObjectToMemory(item);
+            let textObject = LoadTextObjectFromMemory();
+            if (!textObject) {
+                textObject = {};
+                textObject.title = GetTitleText();
+                textObject.lines = {};
+                textObject.order = [];
+                SaveTextObjectToMemory(textObject);
             }
 
 
             // item[line.id] = line;
             // localStorage.setItem(window.location.href, item);
+        }
+
+        function GetTitleText(){
+            const titleElement = document.getElementById("title");
+            let text = titleElement.textContent;
+            if (!text || text.trim().length==0){
+                titleElement.textContent = "Title";
+            }
+            return text;
         }
 
 
@@ -338,7 +358,7 @@
         function ShowSaveDialog() {
             const invalidCharsRegex = /[/\\?%*:|"<>]/g;
             const myText = document.documentElement.outerHTML;
-            const title = document.getElementById("title");
+            const title = GetTitleText();
             let titleText = title.textContent;
             titleText = titleText.replaceAll(invalidCharsRegex, "-");
             saveTextToFile(myText, titleText + '.html');
@@ -353,11 +373,14 @@
     <body>
         <div class="titleBar">
             <div id="title" contenteditable="true">Title</div>
-            <button onclick="ShowSaveDialog()">Save</button>
+            <div class="titleButtons">
+                <button onclick="ShowSaveDialog()">Save</button>
+                <button onclick="AddTextLineAction()">+</button>
+            </div>
             <div id="options">*</div>
         </div>
         <div id="comments" class="comments">
-            <button onclick="AddTextLineAction()">+</button>
+
         </div>
         <script type="application/javascript">
             Init();
