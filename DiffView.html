@@ -57,6 +57,7 @@
         }
 
         .cell-options {
+            display: flex;
             position: absolute;
             right: 10px;
         }
@@ -67,6 +68,7 @@
             padding: 0;
             line-height: 0;
             word-wrap: unset;
+            transform: translateY(-10%);
         }
 
         .text {
@@ -165,6 +167,17 @@
             return textDiffObject;
         }
 
+        function InitObjectMemory(textObject){
+            if (!textObject) {
+                textObject = {};
+                textObject.title = GetTitleText();
+                textObject.lines = {};
+                textObject.order = [];
+                SaveTextObjectToMemory(textObject);
+            }
+            return textObject;
+        }
+
         function SaveTextObjectToMemory(obj){
             sessionStorage.setItem(window.location.href, JSON.stringify(obj));
         }
@@ -180,9 +193,9 @@
         function RenderTextLine(obj) {
             // Generate the html snippet to add to the dom
             const html = `
-                <div id="${obj.id}" class="line" data-position="${obj.position}" draggable="true">
+                <div id="${obj.id}" class="line" draggable="true">
                     <div class="cell comment-cell">
-                        <div class="comment" contenteditable="true">${obj.comment}</div>
+                        <div class="comment" contenteditable="true" oninput="SaveCommentEdits(event)">${obj.comment}</div>
                         <div class="cell-options hidden">
                             <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
                             <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
@@ -195,7 +208,7 @@
                     </div>
                     <div class="spacer"></div>
                     <div class="cell text-cell">
-                        <div class="text" contenteditable="true">${obj.text}</div>
+                        <div class="text" contenteditable="true" oninput="SaveTextEdits()">${obj.text}</div>
                         <div class="cell-options hidden">
                             <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
                             <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
@@ -211,15 +224,8 @@
             return html;
         }
 
-        function AddTextLineEvents(element) {
-            const commentCell = element.getElementsByClassName("comment-cell")[0];
-            const comment = commentCell.getElementsByClassName("comment")[0];
-            const removeButton = commentCell.getElementsByClassName("remove-button")[0];
-            const addButton = commentCell.getElementsByClassName("add-button")[0];
-            const moreOptions = commentCell.getElementsByClassName("more-options-icon")[0];
+        function SetupLineEventHandlers(element){
 
-            // const textCell = element.getElementsByClassName("text-cell")[0];
-            console.log();
         }
 
         function RenderFromMemory() {
@@ -244,20 +250,25 @@
                 for (const key in order) {
                     const value = linesObj[key];
                     const e = document.createElement("div");
-                    e.innerHTML = RenderTextLine(value);
                     commentsElement.appendChild(e);
-                    AddTextLineEvents(e);
+                    e.outerHTML = RenderTextLine(value);
+                    SetupLineEventHandlers(e);
                 }
             }
         }
 
-        function SaveTextEdits() {
+        function SaveTextEdits(e) {
             // Find element in local storage for this html text item, and update it.
 
             // get local storage object
             // find this text row in it
             // update the text in that row
             // save local storage object.
+            console.log();
+        }
+
+        function SaveCommentEdits(e){
+            console.log();
         }
 
         function RemoveTextLineAction(id) {
@@ -278,7 +289,7 @@
             const commentsElement = document.getElementById("comments");
             const lineObj = CreateDefaultLine();
             const lineElement = document.createElement("div");
-            lineElement.innerHTML = RenderTextLine(lineObj);
+            const html = RenderTextLine(lineObj);
 
             const elementRequestingAdd = document.getElementById(callerId);
             if (elementRequestingAdd){
@@ -287,18 +298,22 @@
                 commentsElement.appendChild(lineElement);
             }
 
+            lineElement.outerHTML = html;
+            SetupLineEventHandlers(lineElement);
+
+
             let textObject = LoadTextObjectFromMemory();
-            if (!textObject) {
-                textObject = {};
-                textObject.title = GetTitleText();
-                textObject.lines = {};
-                textObject.order = [];
-                SaveTextObjectToMemory(textObject);
+            textObject = InitObjectMemory(textObject);
+            textObject.lines[lineObj.id] = lineObj;
+
+            if (elementRequestingAdd){
+                const idx = textObject.order.indexOf(callerId);
+                if (idx){
+                    textObject.order.splice(idx+1, 0, lineObj.id);
+                }
             }
 
-
-            // item[line.id] = line;
-            // localStorage.setItem(window.location.href, item);
+            SaveTextObjectToMemory(textObject);
         }
 
         function GetTitleText(){
