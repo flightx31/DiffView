@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Text Annotator</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .titleBar {
+            display: grid;
+            grid-template-columns: 1fr 100px 1fr;
+            grid-column-gap: 10px;
+            background-color: #007d9c;
+            height: 30px;
+            align-content: center;
+            align-items: center;
+            color: antiquewhite;
+            font-size: xx-large;
+            padding: 10px;
+        }
+
+        .titleButtons{
+            display: flex;
+            flex-direction: row;
+        }
+
+        #options{
+            margin-left: auto;
+        }
+
+        .line {
+            display: grid;
+            grid-template-columns:  50% 1fr 50%;
+            width: 100%;
+            overflow-wrap: break-word;
+            font-size: larger;
+            color: black;
+        }
+
+        .line:hover {
+            /*color: darkgray;*/
+            border-bottom: 1px black solid;
+        }
+
+        .cell {
+            display: flex;
+            flex-direction: row;
+            position: relative;
+            width: 100%;
+        }
+
+        .cell:hover .cell-options {
+            display: block;
+        }
+
+        .cell-options {
+            display: flex;
+            position: absolute;
+            right: 10px;
+        }
+
+        .cell-options button {
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            line-height: 0;
+            word-wrap: unset;
+            transform: translateY(-10%);
+        }
+
+        .text {
+            background-color: #FFFFD8;
+            padding-left: 3px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .comment {
+            background-color: lightcyan;
+            padding-left: 3px;
+            height: 100%;
+            width: 100%;
+            /*text-align: center;*/
+        }
+
+        .spacer {
+            background-color: #e0ebf5;
+            width: 6px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script type="application/javascript">
+        /**
+         * Local storage object example:
+         * {
+         *     text: "text here",
+         *     comment: "comment text here",
+         *     id: "id of this text element"
+         * }
+         *
+         * Example of local storage object container:
+         *
+         * {
+         *      title: "title text here"
+         *      lines:{
+         *          id: {local storage object here},
+         *          id: {local storage object here},
+         *          id: {local storage object here}
+         *      },
+         *     order:[
+         *          id,
+         *          id,
+         *          id
+         *      ]
+         * }
+         *
+         * Options needed for the whole page:
+         *      - Reset text - Clears the local memory and re-renders
+         *      - Reset All - same as reset text except clears preferences like colors, fonts etc.
+         *      - change colors for title text and background, comment's, text fields text and background
+         *      - change color for separator
+         *      - change color for no lines background area
+         *      - change font size/type for text and comment lines
+         *      - change font size/type for title
+         *      - An about me popup
+         *      - Setting for which side (left or right) is text and which is comment
+         *
+         * Options needed on each row:
+         *      - change type to/from div/pre so that formatting can be preserved
+         *      - add row always puts it below
+         *      - remove row
+         *      - drag and drop re-order rows
+         *      - change font size/type for this row only
+         *      - Alignment of text (center, left, right)
+         */
+
+        function ParseHTMLIntoObject() {
+            // write a default object to local storage if not present
+            let textDiffObject = {};
+            textDiffObject.title = GetTitleText();
+            textDiffObject.lines = {};
+            textDiffObject.order = [];
+
+            const lineElements = document.getElementsByClassName("line");
+                for (let c=0;c<lineElements.length;c++) {
+                    const element = lineElements[c];
+                    const text = element.getElementsByClassName("text-cell")[0];
+                    const comment = element.getElementsByClassName("comment-cell")[0];
+                    const lineObj = {};
+                    lineObj.id = element.id;
+                    lineObj.text = text.textContent.trim();
+                    lineObj.comment = comment.textContent.trim();
+                    textDiffObject.lines[element.id] = lineObj;
+                    textDiffObject.order.push(element.id);
+                }
+
+            return textDiffObject;
+        }
+
+        function CreateDefaultLine() {
+            let line = {};
+            line.id = crypto.randomUUID();
+            line.text = "";
+            line.comment = "";
+            return line;
+        }
+
+        function RenderTextLine(obj) {
+            // Generate the html snippet to add to the dom
+            const html = `
+                <div id="${obj.id}" class="line" draggable="false">
+                    <div class="cell comment-cell">
+                        <div class="comment" contenteditable="true" oninput="SaveCommentEdits(event)">${obj.comment}</div>
+                        <div class="cell-options hidden">
+                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
+                            <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
+                            <button class="more-options-icon">...</button>
+                            <div class="more-options hidden">
+                                <button class="change-type-button">Change to pre element</button>
+                                <button class="change-font-button">Change font</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="cell text-cell">
+                        <div class="text" contenteditable="true" oninput="SaveTextEdits()">${obj.text}</div>
+                        <div class="cell-options hidden">
+                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
+                            <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
+                            <button class="more-options-icon">...</button>
+                            <div class="more-options hidden">
+                                <button class="change-type-button">Change to pre element</button>
+                                <button class="change-font-button">Change font</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            return html;
+        }
+
+        function SetupLineEventHandlers(element){
+
+        }
+
+        function SaveTextEdits(e) {
+            // Find element in local storage for this html text item, and update it.
+
+            // get local storage object
+            // find this text row in it
+            // update the text in that row
+            // save local storage object.
+            console.log();
+        }
+
+        function SaveCommentEdits(e){
+            console.log();
+        }
+
+        function RemoveTextLineAction(id) {
+            // remove the html, remove the element in local storage for that html element just removed.
+            // get local storage object
+            // find this text row in it, and identify it's position
+            // decrement the positions of the rows after this one
+            // remove this one from the object
+            // save local storage object.
+            const e = document.getElementById(id);
+            e.remove();
+            console.log("remove item " + id);
+        }
+
+        function AddTextLineAction(callerId) {
+            console.log("Add item after " + callerId);
+            // Update HTML with new line
+            const commentsElement = document.getElementById("comments");
+            const lineObj = CreateDefaultLine();
+            const lineElement = document.createElement("div");
+            const html = RenderTextLine(lineObj);
+
+            const elementRequestingAdd = document.getElementById(callerId);
+            if (elementRequestingAdd){
+               elementRequestingAdd.after(lineElement);
+            }else{
+                commentsElement.appendChild(lineElement);
+            }
+
+            lineElement.outerHTML = html;
+            SetupLineEventHandlers(lineElement);
+
+            // Save new line in session storage
+            let textObject = LoadTextObjectFromMemory();
+            textObject.lines[lineObj.id] = lineObj;
+
+            // Insert new line id in the proper of the order array
+            if (elementRequestingAdd){
+                const idx = textObject.order.indexOf(callerId);
+                if (idx){
+                    textObject.order.splice(idx+1, 0, lineObj.id);
+                }
+            }
+
+            SaveTextObjectToMemory(textObject);
+        }
+
+        function GetTitleText(){
+            const titleElement = document.getElementById("title");
+            let text = titleElement.textContent;
+            if (!text || text.trim().length===0){
+                titleElement.textContent = "Title";
+            }
+            return text;
+        }
+
+        async function saveTextToFile(textToSave, defaultFilename = 'untitled.txt') {
+            try {
+                // Check if the File System Access API is supported
+                if (!window.showSaveFilePicker) {
+                    alert('Your browser does not support the File System Access API. Please use a modern browser like Chrome, Edge, or Firefox.');
+                    return;
+                }
+
+                // Options for the save file picker
+                const options = {
+                    startIn: "desktop",
+                    suggestedName: defaultFilename,
+                    types: [
+                        {
+                            description: 'Text Files',
+                            accept: {
+                                'text/plain': ['.txt'],
+                            },
+                        },
+                    ],
+                };
+
+                // Open the save file picker dialog
+                const fileHandle = await window.showSaveFilePicker(options);
+
+                // Create a WritableStream to write content to the file
+                const writableStream = await fileHandle.createWritable();
+
+                // Write the text content
+                await writableStream.write(textToSave);
+
+                // Close the stream
+                await writableStream.close();
+
+                console.log('File saved successfully!');
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Save operation aborted by the user.');
+                } else {
+                    console.error('Error saving file:', error);
+                }
+            }
+        }
+
+        function getFileName() {
+            let path = window.location.pathname;
+            let fileName = decodeURI(path);
+            fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+            return fileName;
+        }
+
+        function ShowSaveDialog() {
+            const myText = document.documentElement.outerHTML;
+            saveTextToFile(myText, getFileName());
+        }
+
+        function LoadTextObjectFromMemory() {
+            let textDiffObjectString = sessionStorage.getItem(window.location.href);
+            if (textDiffObjectString) {
+                // If something there, try to parse it
+                return JSON.parse(textDiffObjectString);
+            }
+            return undefined;
+        }
+
+        function SaveTextObjectToMemory(obj){
+            sessionStorage.setItem(window.location.href, JSON.stringify(obj));
+        }
+
+        /**
+         * Loads data from the HTML or from the session storage
+         * @constructor
+         */
+        function LoadData() {
+            // Read from local storage
+            let textDiffObj = LoadTextObjectFromMemory();
+
+            if (!textDiffObj) {
+                // If missing from local storage, load from the HTML of this file, and save to local storage
+                textDiffObj = ParseHTMLIntoObject();
+                sessionStorage.setItem(window.location.href, JSON.stringify(textDiffObj));
+                return; // return because there is no need to recreate the HTML we just loaded from.
+            }
+
+            // Found things stored in memory, load them in.
+            const linesObj = textDiffObj.lines;
+            const order = textDiffObj.order;
+            const commentsElement = document.getElementById("comments");
+            commentsElement.innerHTML = "";
+
+            // generate the HTML rows here
+            for (let c = 0;c<order.length;c++) {
+                const id = order[c];
+                const value = linesObj[id];
+                const e = document.createElement("div");
+                commentsElement.appendChild(e);
+                e.outerHTML = RenderTextLine(value);
+                SetupLineEventHandlers(e);
+            }
+        }
+
+        function Init() {
+            LoadData();
+        }
+
+    </script>
+</head>
+    <body>
+        <div class="titleBar">
+            <div id="title" contenteditable="true">Title</div>
+            <div class="titleButtons">
+                <button onclick="ShowSaveDialog()">Save</button>
+                <button onclick="AddTextLineAction()">+</button>
+            </div>
+            <div id="options">*</div>
+        </div>
+        <div id="comments" class="comments">
+
+        </div>
+        <script type="application/javascript">
+            Init();
+        </script>
+    </body>
+</html>
