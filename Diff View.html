@@ -150,12 +150,12 @@
             const lineElements = document.getElementsByClassName("line");
                 for (let c=0;c<lineElements.length;c++) {
                     const element = lineElements[c];
-                    const text = element.getElementsByClassName("text-cell")[0];
-                    const comment = element.getElementsByClassName("comment-cell")[0];
+                    const textElement = element.getElementsByClassName("text")[0];
+                    const commentElement = element.getElementsByClassName("comment")[0];
                     const lineObj = {};
                     lineObj.id = element.id;
-                    lineObj.text = text.textContent.trim();
-                    lineObj.comment = comment.textContent.trim();
+                    lineObj.text = textElement.textContent.trim();
+                    lineObj.comment = commentElement.textContent.trim();
                     textDiffObject.lines[element.id] = lineObj;
                     textDiffObject.order.push(element.id);
                 }
@@ -176,10 +176,10 @@
             const html = `
                 <div id="${obj.id}" class="line" draggable="false">
                     <div class="cell comment-cell">
-                        <div class="comment" contenteditable="true" oninput="SaveCommentEdits(event)">${obj.comment}</div>
+                        <div class="comment" contenteditable="true">${obj.comment}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
-                            <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
+                            <button class="remove-button")">-</button>
+                            <button class="add-button")">+</button>
                             <button class="more-options-icon">...</button>
                             <div class="more-options hidden">
                                 <button class="change-type-button">Change to pre element</button>
@@ -189,10 +189,10 @@
                     </div>
                     <div class="spacer"></div>
                     <div class="cell text-cell">
-                        <div class="text" contenteditable="true" oninput="SaveTextEdits()">${obj.text}</div>
+                        <div class="text" contenteditable="true">${obj.text}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button" onclick="RemoveTextLineAction('${obj.id}')">-</button>
-                            <button class="add-button" onclick="AddTextLineAction('${obj.id}')">+</button>
+                            <button class="remove-button">-</button>
+                            <button class="add-button">+</button>
                             <button class="more-options-icon">...</button>
                             <div class="more-options hidden">
                                 <button class="change-type-button">Change to pre element</button>
@@ -206,7 +206,18 @@
         }
 
         function SetupLineEventHandlers(element){
+            const commentElement = element.getElementsByClassName("comment")[0];
+            commentElement.addEventListener("input",EditComment);
+            const textElement = element.getElementsByClassName("text")[0];
+            textElement.addEventListener("input",EditText);
+        }
 
+        function EditText(e){
+            console.log(e);
+        }
+
+        function EditComment(e){
+            console.log(e);
         }
 
         function SaveTextEdits(e) {
@@ -240,8 +251,10 @@
             // Update HTML with new line
             const commentsElement = document.getElementById("comments");
             const lineObj = CreateDefaultLine();
-            const lineElement = document.createElement("div");
             const html = RenderTextLine(lineObj);
+            let tempContainer = document.createElement("div");
+            tempContainer.innerHTML = html;
+            let lineElement = tempContainer.firstElementChild;
 
             const elementRequestingAdd = document.getElementById(callerId);
             if (elementRequestingAdd){
@@ -250,7 +263,6 @@
                 commentsElement.appendChild(lineElement);
             }
 
-            lineElement.outerHTML = html;
             SetupLineEventHandlers(lineElement);
 
             // Save new line in session storage
