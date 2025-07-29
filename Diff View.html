@@ -9,6 +9,12 @@
             flex-direction: column;
         }
 
+        ::spelling-error {
+            text-decoration: none; /* Removes the underline */
+            background-color: transparent; /* Ensures no background highlight */
+            color: inherit; /* Maintains original text color */
+        }
+
         .titleBar {
             display: grid;
             grid-template-columns: 1fr 100px 1fr;
