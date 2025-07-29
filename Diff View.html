@@ -81,7 +81,8 @@
         .text {
             background-color: #FFFFD8;
             padding-left: 3px;
-            height: 100%;
+            /*height: 100%;*/
+            /*height:auto;*/
             width: 100%;
             white-space: pre-wrap;
         }
@@ -89,7 +90,7 @@
         .comment {
             background-color: lightcyan;
             padding-left: 3px;
-            height: 100%;
+            /*height: 100%;*/
             width: 100%;
             white-space: pre-wrap;
         }
@@ -146,6 +147,7 @@
          *      - drag and drop re-order rows
          *      - change font size/type for this row only
          *      - Alignment of text (center, left, right)
+         *      - Vertical Alignment top middle bottom
          */
 
         function ParseHTMLIntoObject() {
@@ -162,8 +164,8 @@
                     const commentElement = element.getElementsByClassName("comment")[0];
                     const lineObj = {};
                     lineObj.id = element.id;
-                    lineObj.text = textElement.textContent;
-                    lineObj.comment = commentElement.textContent;
+                    lineObj.text = textElement.innerText;
+                    lineObj.comment = commentElement.innerText;
                     textDiffObject.lines[element.id] = lineObj;
                     textDiffObject.order.push(element.id);
                 }
@@ -190,7 +192,6 @@
                             <button class="italic-button hidden")">i</button>
                             <button class="underline-button hidden")">u</button>
                             <button class="align-button")">Left</button>
-                            <button class="code-text-button")"><></button>
                             <button class="add-button")">+</button>
                             <button class="remove-button")">-</button>
                         </div>
@@ -203,7 +204,6 @@
                             <button class="italic-button hidden")">i</button>
                             <button class="underline-button hidden")">u</button>
                             <button class="align-button")">Left</button>
-                            <button class="code-text-button")"><></button>
                             <button class="add-button")">+</button>
                             <button class="remove-button")">-</button>
                         </div>
@@ -220,16 +220,13 @@
 
             const commentElement = element.getElementsByClassName("comment")[0];
             const debounceCommentEdit = debounce(()=>{
-                EditComment(commentElement.textContent, id)
+                EditComment(commentElement.innerText, id)
             }, 500)
             commentElement.addEventListener("input",debounceCommentEdit);
-            commentElement.addEventListener("input",()=>{
-                autoExpand(commentElement);
-            });
 
             const textElement = element.getElementsByClassName("text")[0];
             const debounceTextEdit = debounce(()=>{
-                EditText(textElement.textContent, id)
+                EditText(textElement.innerText, id)
             }, 500)
             textElement.addEventListener("input",debounceTextEdit);
 
@@ -246,11 +243,6 @@
                 const b = buttons[c];
                 b.addEventListener("click", ()=>{RemoveTextLineAction(id)});
             }
-        }
-
-        function autoExpand(element) {
-            element.style.height = 'auto'; // Reset height to recalculate scrollHeight
-            element.style.height = (element.scrollHeight) + 'px'; // Set height to scrollHeight
         }
 
         // From ChatGPT
@@ -273,6 +265,7 @@
             line.text = text;
             SaveTextObjectToMemory(objectFromMemory);
             console.log(text, id);
+            window.hasUnsavedChanges = true;
         }
 
         function EditComment(text, id){
@@ -281,6 +274,15 @@
             line.comment = text;
             SaveTextObjectToMemory(objectFromMemory);
             console.log(text, id);
+            window.hasUnsavedChanges = true;
+        }
+
+        function EditTitle(){
+            let objectFromMemory = LoadTextObjectFromMemory();
+            objectFromMemory.title = GetTitleText();
+            SaveTextObjectToMemory(objectFromMemory);
+            console.log(GetTitleText(), "Title text");
+            window.hasUnsavedChanges = true;
         }
 
         function RemoveTextLineAction(id) {
@@ -376,6 +378,7 @@
                 await writableStream.close();
 
                 console.log('File saved successfully!');
+                window.hasUnsavedChanges = false;
 
             } catch (error) {
                 if (error.name === 'AbortError') {
@@ -437,18 +440,34 @@
                 const id = order[c];
                 const value = linesObj[id];
 
-                // TODO fix why it loads the first element in the list below the other elements
                 let tempContainer = document.createElement("div");
                 tempContainer.innerHTML = RenderTextLine(value);
                 let lineElement = tempContainer.firstElementChild;
                 commentsElement.appendChild(lineElement);
-                autoExpand(lineElement);
                 SetupLineEventHandlers(lineElement);
             }
         }
 
+        async function BeforeUnloadEvent(event){
+            if (window.hasUnsavedChanges) {
+                // Cancel the event and show the browser's default confirmation dialog
+                // event.preventDefault();
+                // event.returnValue = ''; // Required for some browsers to display the dialog
+                let resp = confirm("Save changes first?");
+                if (resp){
+                    ShowSaveDialog();
+                } else{
+                    event.preventDefault();
+                }
+            }
+        }
+
         function Init() {
+            window.hasUnSavedChanges = false;
             LoadData();
+            const titleElement = document.getElementById("title");
+            titleElement.addEventListener("input", EditTitle);
+            window.addEventListener("beforeunload", BeforeUnloadEvent);
         }
 
     </script>
