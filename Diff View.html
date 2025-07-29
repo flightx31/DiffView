@@ -206,18 +206,45 @@
         }
 
         function SetupLineEventHandlers(element){
+            const id = element.id;
+
             const commentElement = element.getElementsByClassName("comment")[0];
-            commentElement.addEventListener("input",EditComment);
+            const debounceCommentEdit = debounce(()=>{EditComment(commentElement.textContent, id)}, 500)
+            commentElement.addEventListener("input",debounceCommentEdit);
+
             const textElement = element.getElementsByClassName("text")[0];
-            textElement.addEventListener("input",EditText);
+            const debounceTextEdit = debounce(()=>{EditText(textElement.textContent, id)}, 500)
+            textElement.addEventListener("input",debounceTextEdit);
         }
 
-        function EditText(e){
-            console.log(e);
+        // From ChatGPT
+        function debounce(func, delay) {
+            let timeoutId;
+
+            return function (...args) {
+                const context = this;
+
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    func.apply(context, args);
+                }, delay);
+            };
         }
 
-        function EditComment(e){
-            console.log(e);
+        function EditText(text, id){
+            let objectFromMemory = LoadTextObjectFromMemory();
+            let line = objectFromMemory.lines[id];
+            line.text = text;
+            SaveTextObjectToMemory(objectFromMemory);
+            console.log(text, id);
+        }
+
+        function EditComment(text, id){
+            let objectFromMemory = LoadTextObjectFromMemory();
+            let line = objectFromMemory.lines[id];
+            line.comment = text;
+            SaveTextObjectToMemory(objectFromMemory);
+            console.log(text, id);
         }
 
         function SaveTextEdits(e) {
@@ -275,6 +302,8 @@
                 if (idx){
                     textObject.order.splice(idx+1, 0, lineObj.id);
                 }
+            } else{
+                textObject.order.push(lineObj.id);
             }
 
             SaveTextObjectToMemory(textObject);
@@ -384,10 +413,11 @@
             for (let c = 0;c<order.length;c++) {
                 const id = order[c];
                 const value = linesObj[id];
-                const e = document.createElement("div");
-                commentsElement.appendChild(e);
-                e.outerHTML = RenderTextLine(value);
-                SetupLineEventHandlers(e);
+                let tempContainer = document.createElement("div");
+                tempContainer.innerHTML = RenderTextLine(value);
+                let lineElement = tempContainer.firstElementChild;
+                commentsElement.appendChild(lineElement);
+                SetupLineEventHandlers(lineElement);
             }
         }
 
