@@ -442,7 +442,7 @@
                 tempContainer.innerHTML = RenderTextLine(value);
                 let lineElement = tempContainer.firstElementChild;
                 commentsElement.appendChild(lineElement);
-                // autoExpand(lineElement);
+                autoExpand(lineElement);
                 SetupLineEventHandlers(lineElement);
             }
         }
