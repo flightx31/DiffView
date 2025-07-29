@@ -215,6 +215,20 @@
             const textElement = element.getElementsByClassName("text")[0];
             const debounceTextEdit = debounce(()=>{EditText(textElement.textContent, id)}, 500)
             textElement.addEventListener("input",debounceTextEdit);
+
+            let buttons = element.getElementsByClassName("add-button");
+
+            for (let c=0;c<buttons.length;c++){
+                const b = buttons[c];
+                b.addEventListener("click", ()=>{AddTextLineAction(id)});
+            }
+
+            buttons = element.getElementsByClassName("remove-button");
+
+            for (let c=0;c<buttons.length;c++){
+                const b = buttons[c];
+                b.addEventListener("click", ()=>{RemoveTextLineAction(id)});
+            }
         }
 
         // From ChatGPT
@@ -247,29 +261,16 @@
             console.log(text, id);
         }
 
-        function SaveTextEdits(e) {
-            // Find element in local storage for this html text item, and update it.
-
-            // get local storage object
-            // find this text row in it
-            // update the text in that row
-            // save local storage object.
-            console.log();
-        }
-
-        function SaveCommentEdits(e){
-            console.log();
-        }
-
         function RemoveTextLineAction(id) {
-            // remove the html, remove the element in local storage for that html element just removed.
-            // get local storage object
-            // find this text row in it, and identify it's position
-            // decrement the positions of the rows after this one
-            // remove this one from the object
-            // save local storage object.
             const e = document.getElementById(id);
             e.remove();
+
+            let objectFromMemory = LoadTextObjectFromMemory();
+            delete objectFromMemory.lines[id];
+            objectFromMemory.order = objectFromMemory.order.filter(item => {
+                return item !== id;
+            });
+            SaveTextObjectToMemory(objectFromMemory);
             console.log("remove item " + id);
         }
 
@@ -299,7 +300,7 @@
             // Insert new line id in the proper of the order array
             if (elementRequestingAdd){
                 const idx = textObject.order.indexOf(callerId);
-                if (idx){
+                if (idx>=-1){
                     textObject.order.splice(idx+1, 0, lineObj.id);
                 }
             } else{
