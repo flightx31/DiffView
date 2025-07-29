@@ -410,10 +410,13 @@
         }
 
         async function Import(){
-            const objText = await navigator.clipboard.readText();
-            const obj = JSON.parse(objText);
-            SaveTextObjectToMemory(obj);
-            window.location.reload();
+            let resp = confirm("Import data? (You will loose current work)");
+            if (resp){
+                const objText = await navigator.clipboard.readText();
+                const obj = JSON.parse(objText);
+                SaveTextObjectToMemory(obj);
+                window.location.reload();
+            }
         }
 
         function LoadTextObjectFromMemory() {
@@ -443,6 +446,9 @@
                 sessionStorage.setItem(window.location.href, JSON.stringify(textDiffObj));
                 return; // return because there is no need to recreate the HTML we just loaded from.
             }
+
+            const titleElement = document.getElementById("title");
+            titleElement.innerHTML = textDiffObj.title;
 
             // Found things stored in memory, load them in.
             const linesObj = textDiffObj.lines;
