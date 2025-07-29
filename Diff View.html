@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Text Annotator</title>
+<!--    TODO Add css print settings so it looks nicer when saving to pdf.-->
     <style>
         body {
             display: flex;
@@ -497,9 +498,9 @@
         <div class="titleBar">
             <div id="title" contenteditable="true">Title</div>
             <div class="titleButtons">
-                <button onclick="ShowSaveDialog()">Save</button>
-                <button onclick="Export()">Export</button>
+<!--                <button onclick="ShowSaveDialog()">Save</button>-->
                 <button onclick="Import()">Import</button>
+                <button onclick="Export()">Export</button>
                 <button onclick="AddTextLineAction()">+</button>
             </div>
             <div id="options">*</div>
