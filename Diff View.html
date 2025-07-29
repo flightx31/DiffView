@@ -9,6 +9,11 @@
             flex-direction: column;
         }
 
+        textarea {
+            resize: none; /* Prevents user from manually resizing */
+            overflow: hidden; /* Hides scrollbar when content exceeds initial height */
+        }
+
         ::spelling-error {
             text-decoration: none; /* Removes the underline */
             background-color: transparent; /* Ensures no background highlight */
@@ -83,6 +88,7 @@
             padding-left: 3px;
             height: 100%;
             width: 100%;
+            white-space: pre-wrap;
         }
 
         .comment {
@@ -90,7 +96,7 @@
             padding-left: 3px;
             height: 100%;
             width: 100%;
-            /*text-align: center;*/
+            white-space: pre-wrap;
         }
 
         .spacer {
@@ -161,8 +167,8 @@
                     const commentElement = element.getElementsByClassName("comment")[0];
                     const lineObj = {};
                     lineObj.id = element.id;
-                    lineObj.text = textElement.textContent.trim();
-                    lineObj.comment = commentElement.textContent.trim();
+                    lineObj.text = textElement.textContent;
+                    lineObj.comment = commentElement.textContent;
                     textDiffObject.lines[element.id] = lineObj;
                     textDiffObject.order.push(element.id);
                 }
@@ -183,7 +189,7 @@
             const html = `
                 <div id="${obj.id}" class="line" draggable="false">
                     <div class="cell comment-cell">
-                        <div class="comment" contenteditable="true">${obj.comment}</div>
+                        <textarea class="comment" contenteditable="true" >${obj.comment}</textarea>
                         <div class="cell-options hidden">
                             <button class="bold-button hidden")">B</button>
                             <button class="italic-button hidden")">i</button>
@@ -218,11 +224,16 @@
             // TODO show text formatting buttons when text is selected in the text fields
 
             const commentElement = element.getElementsByClassName("comment")[0];
-            const debounceCommentEdit = debounce(()=>{EditComment(commentElement.textContent, id)}, 500)
+            const debounceCommentEdit = debounce(()=>{
+                EditComment(commentElement.value, id)
+                autoExpand(commentElement);
+            }, 500)
             commentElement.addEventListener("input",debounceCommentEdit);
 
             const textElement = element.getElementsByClassName("text")[0];
-            const debounceTextEdit = debounce(()=>{EditText(textElement.textContent, id)}, 500)
+            const debounceTextEdit = debounce(()=>{
+                EditText(textElement.textContent, id)
+            }, 500)
             textElement.addEventListener("input",debounceTextEdit);
 
             let buttons = element.getElementsByClassName("add-button");
@@ -238,6 +249,11 @@
                 const b = buttons[c];
                 b.addEventListener("click", ()=>{RemoveTextLineAction(id)});
             }
+        }
+
+        function autoExpand(element) {
+            element.style.height = 'auto'; // Reset height to recalculate scrollHeight
+            element.style.height = (element.scrollHeight) + 'px'; // Set height to scrollHeight
         }
 
         // From ChatGPT
@@ -427,6 +443,7 @@
                 tempContainer.innerHTML = RenderTextLine(value);
                 let lineElement = tempContainer.firstElementChild;
                 commentsElement.appendChild(lineElement);
+                autoExpand(lineElement);
                 SetupLineEventHandlers(lineElement);
             }
         }
