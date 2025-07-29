@@ -223,13 +223,13 @@
 
             const commentElement = element.getElementsByClassName("comment")[0];
             const debounceCommentEdit = debounce(()=>{
-                EditComment(commentElement.innerText, id)
+                EditComment(commentElement.innerHTML, id)
             }, 500)
             commentElement.addEventListener("input",debounceCommentEdit);
 
             const textElement = element.getElementsByClassName("text")[0];
             const debounceTextEdit = debounce(()=>{
-                EditText(textElement.innerText, id)
+                EditText(textElement.innerHTML, id)
             }, 500)
             textElement.addEventListener("input",debounceTextEdit);
 
@@ -339,7 +339,7 @@
 
         function GetTitleText(){
             const titleElement = document.getElementById("title");
-            let text = titleElement.textContent;
+            let text = titleElement.innerHTML;
             text = text.trim();
             return text;
         }
@@ -400,6 +400,20 @@
         function ShowSaveDialog() {
             const myText = document.documentElement.outerHTML;
             saveTextToFile(myText, getFileName());
+        }
+
+        function Export(){
+            const obj = LoadTextObjectFromMemory();
+            const objText = JSON.stringify(obj);
+            navigator.clipboard.writeText(objText);
+            alert("Page Data copied to clipboard")
+        }
+
+        async function Import(){
+            const objText = await navigator.clipboard.readText();
+            const obj = JSON.parse(objText);
+            SaveTextObjectToMemory(obj);
+            window.location.reload();
         }
 
         function LoadTextObjectFromMemory() {
@@ -478,6 +492,8 @@
             <div id="title" contenteditable="true">Title</div>
             <div class="titleButtons">
                 <button onclick="ShowSaveDialog()">Save</button>
+                <button onclick="Export()">Export</button>
+                <button onclick="Import()">Import</button>
                 <button onclick="AddTextLineAction()">+</button>
             </div>
             <div id="options">*</div>
