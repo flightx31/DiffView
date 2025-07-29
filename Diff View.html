@@ -154,6 +154,9 @@
             // write a default object to local storage if not present
             let textDiffObject = {};
             textDiffObject.title = GetTitleText();
+            if (textDiffObject.title.length===0){
+                textDiffObject.title = "Title";
+            }
             textDiffObject.lines = {};
             textDiffObject.order = [];
 
@@ -337,9 +340,7 @@
         function GetTitleText(){
             const titleElement = document.getElementById("title");
             let text = titleElement.textContent;
-            if (!text || text.trim().length===0){
-                titleElement.textContent = "Title";
-            }
+            text = text.trim();
             return text;
         }
 
