@@ -9,11 +9,6 @@
             flex-direction: column;
         }
 
-        textarea {
-            resize: none; /* Prevents user from manually resizing */
-            overflow: hidden; /* Hides scrollbar when content exceeds initial height */
-        }
-
         ::spelling-error {
             text-decoration: none; /* Removes the underline */
             background-color: transparent; /* Ensures no background highlight */
@@ -189,7 +184,7 @@
             const html = `
                 <div id="${obj.id}" class="line" draggable="false">
                     <div class="cell comment-cell">
-                        <textarea class="comment" contenteditable="true" >${obj.comment}</textarea>
+                        <div class="comment" contenteditable="true" >${obj.comment}</div>
                         <div class="cell-options hidden">
                             <button class="bold-button hidden")">B</button>
                             <button class="italic-button hidden")">i</button>
@@ -225,7 +220,7 @@
 
             const commentElement = element.getElementsByClassName("comment")[0];
             const debounceCommentEdit = debounce(()=>{
-                EditComment(commentElement.value, id)
+                EditComment(commentElement.textContent, id)
             }, 500)
             commentElement.addEventListener("input",debounceCommentEdit);
             commentElement.addEventListener("input",()=>{
@@ -447,7 +442,7 @@
                 tempContainer.innerHTML = RenderTextLine(value);
                 let lineElement = tempContainer.firstElementChild;
                 commentsElement.appendChild(lineElement);
-                autoExpand(lineElement);
+                // autoExpand(lineElement);
                 SetupLineEventHandlers(lineElement);
             }
         }
