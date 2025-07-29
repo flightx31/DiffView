@@ -69,7 +69,8 @@
         }
 
         .cell-options button {
-            width: 18px;
+            /*width: 18px;*/
+            min-width: 18px;
             height: 18px;
             padding: 0;
             line-height: 0;
@@ -184,26 +185,26 @@
                     <div class="cell comment-cell">
                         <div class="comment" contenteditable="true">${obj.comment}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button")">-</button>
+                            <button class="bold-button hidden")">B</button>
+                            <button class="italic-button hidden")">i</button>
+                            <button class="underline-button hidden")">u</button>
+                            <button class="align-button")">Left</button>
+                            <button class="code-text-button")"><></button>
                             <button class="add-button")">+</button>
-                            <button class="more-options-icon">...</button>
-                            <div class="more-options hidden">
-                                <button class="change-type-button">Change to pre element</button>
-                                <button class="change-font-button">Change font</button>
-                            </div>
+                            <button class="remove-button")">-</button>
                         </div>
                     </div>
                     <div class="spacer"></div>
                     <div class="cell text-cell">
                         <div class="text" contenteditable="true">${obj.text}</div>
                         <div class="cell-options hidden">
-                            <button class="remove-button">-</button>
-                            <button class="add-button">+</button>
-                            <button class="more-options-icon">...</button>
-                            <div class="more-options hidden">
-                                <button class="change-type-button">Change to pre element</button>
-                                <button class="change-font-button">Change font</button>
-                            </div>
+                            <button class="bold-button hidden")">B</button>
+                            <button class="italic-button hidden")">i</button>
+                            <button class="underline-button hidden")">u</button>
+                            <button class="align-button")">Left</button>
+                            <button class="code-text-button")"><></button>
+                            <button class="add-button")">+</button>
+                            <button class="remove-button")">-</button>
                         </div>
                     </div>
                 </div>`;
@@ -213,6 +214,8 @@
 
         function SetupLineEventHandlers(element){
             const id = element.id;
+
+            // TODO show text formatting buttons when text is selected in the text fields
 
             const commentElement = element.getElementsByClassName("comment")[0];
             const debounceCommentEdit = debounce(()=>{EditComment(commentElement.textContent, id)}, 500)
