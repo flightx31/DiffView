@@ -16,9 +16,16 @@
             color: inherit; /* Maintains original text color */
         }
 
+        #title{
+            align-content: center;
+            text-align: center;
+            font-size: 36pt;
+            /*border-bottom: 2px black solid;*/
+        }
+
         .titleBar {
             display: grid;
-            grid-template-columns: 1fr 100px 1fr;
+            grid-template-columns: 1fr 1fr;
             grid-column-gap: 10px;
             background-color: #007d9c;
             height: 30px;
@@ -403,7 +410,7 @@
             saveTextToFile(myText, getFileName());
         }
 
-        function Export(){
+        function ExportJSON(){
             const obj = LoadTextObjectFromMemory();
             const objText = JSON.stringify(obj);
             navigator.clipboard.writeText(objText);
@@ -496,18 +503,16 @@
 </head>
     <body>
         <div class="titleBar">
-            <div id="title" contenteditable="true">Title</div>
             <div class="titleButtons">
 <!--                <button onclick="ShowSaveDialog()">Save</button>-->
-                <button onclick="Import()">Import</button>
-                <button onclick="Export()">Export</button>
+                <button onclick="Import()">Import JSON</button>
+                <button onclick="ExportJSON()">Export JSON</button>
                 <button onclick="AddTextLineAction()">+</button>
             </div>
             <div id="options">*</div>
         </div>
-        <div id="comments" class="comments">
-
-        </div>
+        <div id="title" contenteditable="true">Title</div>
+        <div id="comments" class="comments"></div>
         <script type="application/javascript">
             Init();
         </script>
