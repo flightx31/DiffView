@@ -195,14 +195,14 @@
         function RenderTextLine(obj) {
             // Generate the html snippet to add to the dom
             const html = `
-                <div id="${obj.id}" class="line" draggable="false">
+                <div id="${obj.id}" class="line" draggable="true">
                     <div class="cell comment-cell">
                         <div class="comment" contenteditable="true" >${obj.comment}</div>
                         <div class="cell-options hidden">
-                            <button class="bold-button hidden")">B</button>
-                            <button class="italic-button hidden")">i</button>
-                            <button class="underline-button hidden")">u</button>
-                            <button class="align-button")">Left</button>
+<!--                            <button class="bold-button hidden")">B</button>-->
+<!--                            <button class="italic-button hidden")">i</button>-->
+<!--                            <button class="underline-button hidden")">u</button>-->
+                            <button class="split-button")">%</button>
                             <button class="add-button")">+</button>
                             <button class="remove-button")">-</button>
                         </div>
@@ -211,10 +211,10 @@
                     <div class="cell text-cell">
                         <div class="text" contenteditable="true">${obj.text}</div>
                         <div class="cell-options hidden">
-                            <button class="bold-button hidden")">B</button>
-                            <button class="italic-button hidden")">i</button>
-                            <button class="underline-button hidden")">u</button>
-                            <button class="align-button")">Left</button>
+<!--                            <button class="bold-button hidden")">B</button>-->
+<!--                            <button class="italic-button hidden")">i</button>-->
+<!--                            <button class="underline-button hidden")">u</button>-->
+                            <button class="split-button")">%</button>
                             <button class="add-button")">+</button>
                             <button class="remove-button")">-</button>
                         </div>
@@ -242,18 +242,28 @@
             textElement.addEventListener("input",debounceTextEdit);
 
             let buttons = element.getElementsByClassName("add-button");
-
             for (let c=0;c<buttons.length;c++){
                 const b = buttons[c];
                 b.addEventListener("click", ()=>{AddTextLineAction(id)});
             }
 
             buttons = element.getElementsByClassName("remove-button");
-
             for (let c=0;c<buttons.length;c++){
                 const b = buttons[c];
                 b.addEventListener("click", ()=>{RemoveTextLineAction(id)});
             }
+
+            buttons = element.getElementsByClassName("split-button");
+            for (let c=0;c<buttons.length;c++){
+                const b = buttons[c];
+                b.addEventListener("click", ()=>{split(id)});
+            }
+        }
+
+        function split(id){
+            const selection = window.getSelection();
+
+            console.log(selection.focusOffset);
         }
 
         // From ChatGPT
