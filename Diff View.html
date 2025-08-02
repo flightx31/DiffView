@@ -171,14 +171,17 @@
             const lineElements = document.getElementsByClassName("line");
                 for (let c=0;c<lineElements.length;c++) {
                     const element = lineElements[c];
-                    const textElement = element.getElementsByClassName("text")[0];
-                    const commentElement = element.getElementsByClassName("comment")[0];
-                    const lineObj = {};
-                    lineObj.id = element.id;
-                    lineObj.text = textElement.innerText;
-                    lineObj.comment = commentElement.innerText;
-                    textDiffObject.lines[element.id] = lineObj;
-                    textDiffObject.order.push(element.id);
+                    const type = element.dataset.type;
+                    if (type==="diff"){
+                        const textElement = element.getElementsByClassName("text")[0];
+                        const commentElement = element.getElementsByClassName("comment")[0];
+                        const lineObj = {};
+                        lineObj.id = element.id;
+                        lineObj.text = textElement.innerText;
+                        lineObj.comment = commentElement.innerText;
+                        textDiffObject.lines[element.id] = lineObj;
+                        textDiffObject.order.push(element.id);
+                    }
                 }
 
             return textDiffObject;
@@ -195,7 +198,7 @@
         function RenderTextLine(obj) {
             // Generate the html snippet to add to the dom
             const html = `
-                <div id="${obj.id}" class="line" draggable="true">
+                <div id="${obj.id}" class="line" data-type="diff" draggable="true">
                     <div class="cell comment-cell">
                         <div class="comment" contenteditable="true" >${obj.comment}</div>
                         <div class="cell-options hidden">
