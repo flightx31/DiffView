@@ -195,7 +195,7 @@
             return line;
         }
 
-        function RenderTextLine(obj) {
+        function RenderDiffTextLine(obj) {
             // Generate the html snippet to add to the dom
             const html = `
                 <div id="${obj.id}" class="line" data-type="diff" draggable="true">
@@ -227,7 +227,7 @@
             return html;
         }
 
-        function SetupLineEventHandlers(element){
+        function SetupDiffLineEventHandlers(element){
             const id = element.id;
 
             // TODO show text formatting buttons when text is selected in the text fields
@@ -264,10 +264,31 @@
         }
 
         function split(id){
+            const offset = getCursorOffset(id);
+
+            console.log(offset);
+        }
+
+
+        function getCursorOffset(id) {
+            const editableDiv = document.getElementById(id);
             const selection = window.getSelection();
 
-            console.log(selection.focusOffset);
+            if (!selection.rangeCount) return;
+
+            const range = selection.getRangeAt(0);
+            const preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(editableDiv);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+
+            // Create a temporary span to extract plain text
+            const tempSpan = document.createElement("span");
+            tempSpan.appendChild(preCaretRange.cloneContents());
+
+            const offset = tempSpan.innerText.length;
+            console.log("Cursor character offset:", offset);
         }
+
 
         // From ChatGPT
         function debounce(func, delay) {
@@ -327,7 +348,7 @@
             // Update HTML with new line
             const commentsElement = document.getElementById("comments");
             const lineObj = CreateDefaultLine();
-            const html = RenderTextLine(lineObj);
+            const html = RenderDiffTextLine(lineObj);
             let tempContainer = document.createElement("div");
             tempContainer.innerHTML = html;
             let lineElement = tempContainer.firstElementChild;
@@ -339,7 +360,7 @@
                 commentsElement.appendChild(lineElement);
             }
 
-            SetupLineEventHandlers(lineElement);
+            SetupDiffLineEventHandlers(lineElement);
 
             // Save new line in session storage
             let textObject = LoadTextObjectFromMemory();
@@ -483,10 +504,10 @@
                 const value = linesObj[id];
 
                 let tempContainer = document.createElement("div");
-                tempContainer.innerHTML = RenderTextLine(value);
+                tempContainer.innerHTML = RenderDiffTextLine(value);
                 let lineElement = tempContainer.firstElementChild;
                 commentsElement.appendChild(lineElement);
-                SetupLineEventHandlers(lineElement);
+                SetupDiffLineEventHandlers(lineElement);
             }
         }
 
